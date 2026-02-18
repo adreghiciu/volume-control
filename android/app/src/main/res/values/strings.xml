@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Volume Control</string>
+    <string name="add_device">Add Device</string>
+    <string name="retry_all">Refresh</string>
+    <string name="device_name">Device Name</string>
+    <string name="device_host">Host</string>
+    <string name="device_port">Port</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="error_unreachable">Error: unreachable</string>
+    <string name="volume_label">Volume</string>
+</resources>

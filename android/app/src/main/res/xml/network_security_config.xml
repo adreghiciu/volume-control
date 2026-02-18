@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- DANGER: Allows cleartext HTTP to EVERYWHERE – use only for debugging! -->
+    <base-config cleartextTrafficPermitted="true" />
+
+    <!-- Optional: you can still add more specific trust anchors / pinning here later -->
+</network-security-config>

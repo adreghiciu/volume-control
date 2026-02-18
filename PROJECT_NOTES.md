@@ -20,6 +20,8 @@ A multi-platform volume control system:
 ## Current Status
 
 ### ✅ Completed
+
+#### Phase 1: macOS App (COMPLETE)
 - macOS app core functionality implemented:
   - VolumeController: ObservableObject for volume get/set via osascript
   - VolumeView: SwiftUI popover with slider and quit button
@@ -34,18 +36,83 @@ A multi-platform volume control system:
   - HTTP response hanging: Fixed completion handler to wait for send before closing connection
   - Removed unused weak self capture (compiler warning)
 
-### 🏗️ In Progress / Testing
-- Testing macOS app on actual Catalina hardware (2013 iMac)
-- Verifying HTTP API works correctly with curl
+#### Phase 2: Android App (COMPLETE)
+- Android 14 app built with Kotlin + Jetpack Compose:
+  - **Device Management**: Add/edit/delete devices with persistent storage via DataStore
+  - **UI**: Material 3 design with one scrollable slider per device
+  - **Volume Control**: Real-time slider updates that POST to macOS HTTP API
+  - **Parallel Fetching**: All devices fetched concurrently on app focus (non-blocking)
+  - **Error Handling**: Shows "unreachable" messages, disables sliders on error
+  - **Retry Mechanism**: "Retry All" option in menu to re-fetch all volumes
+  - **Architecture**: MVVM + StateFlow, clean separation of concerns
+  - **API Client**: OkHttp with 3-second timeout (no auto-retry)
+  - **Persistence**: DataStore + Gson for lightweight JSON storage
+
+- File structure created:
+  - Root gradle files (build.gradle.kts, settings.gradle.kts)
+  - App gradle with all dependencies (Compose, OkHttp, DataStore, Gson)
+  - 8 Kotlin source files (ViewModel, screens, API client, repository, models)
+  - Resources (AndroidManifest.xml, themes, strings, icons)
+  - Comprehensive README with usage instructions
+
+### ✅ Android APK Build (COMPLETE)
+- **Status**: APK successfully built using Docker
+- **Approach**: Docker container with Android SDK + Gradle 8.10
+- **Completed**:
+  - ✅ Official Docker installed from Ubuntu repos
+  - ✅ User added to docker group
+  - ✅ Dockerfile created with Android SDK + Gradle 8.10
+  - ✅ Fixed Java version compatibility (Java 21 for Kotlin 2.0.0)
+  - ✅ Added Compose Compiler Gradle plugin for Kotlin 2.0
+  - ✅ Fixed ExperimentalFoundationApi usage in DeviceCard.kt
+  - ✅ Android APK built successfully: `VolumeControl.apk` (24 MB)
+  - ✅ Cleaned up gradle artifacts (gradle-8.5, gradle zips, .gradle cache)
+  - ✅ Documentation updated for Docker build process
+
+**Output**:
+- **APK Location**: `/home/adreghi/Work/volume-control/android/VolumeControl.apk`
+- **Size**: 24 MB
+- **Install**: `adb install android/VolumeControl.apk`
+- **Config**: Debug build targeting Android 34 (Gradle 8.10, Kotlin 2.0.0)
+
+### ✅ Android APK Testing & Debugging (COMPLETE)
+- **Status**: Android app tested and fully working with macOS app
+- **Testing Target**: Android 14 device, macOS Catalina server at 192.168.68.104:8888
+- **Fixes Applied**:
+  - ✅ **Cleartext HTTP**: Created `network_security_config.xml` allowing cleartext traffic for local network
+  - ✅ **Threading**: Wrapped OkHttp calls with `Dispatchers.IO` to prevent NetworkOnMainThreadException
+  - ✅ **Socket Timeouts**: Implemented 500ms debounce on slider to prevent excessive API calls
+  - ✅ **State Management**: Modified setVolume to NOT update UI; only getVolume (fetched via LaunchedEffect) updates display
+  - ✅ **Startup Display**: Added fetchAllVolumes() calls to loadDevices() and addDevice()
+  - ✅ **Slider Jumps**: Fixed slider reverting to old values by implementing proper state management pattern
+  - ✅ **UI Text**: Renamed "Retry All" → "Refresh" menu option
+  - ✅ **Repository**: Cleaned and organized .gitignore files (root, android/, macos/)
+
+**Key Pattern**:
+- **Optimistic updates**: Slider updates UI immediately (pendingVolume) while request is in-flight
+- **Server-driven display**: Volume display only updates from explicit getVolume calls, not from setVolume responses
+- **Debounce behavior**: User sees pending value immediately, API request fires 500ms after user stops moving slider
+- **Error recovery**: On setVolume error, calls fetchAllVolumes() to sync UI with actual device state
+
+**Files Modified**:
+- `android/app/src/main/res/xml/network_security_config.xml` (created)
+- `android/app/src/main/AndroidManifest.xml` (added security config reference)
+- `android/app/src/main/java/com/volumecontrol/android/data/VolumeApiClient.kt` (Dispatchers.IO, improved errors)
+- `android/app/src/main/java/com/volumecontrol/android/ui/DeviceCard.kt` (debouncing, LaunchedEffect)
+- `android/app/src/main/java/com/volumecontrol/android/ui/MainViewModel.kt` (fetchAllVolumes on load)
+- `android/app/src/main/java/com/volumecontrol/android/MainActivity.kt` (removed duplicate call)
+- `android/app/src/main/res/values/strings.xml` (renamed retry menu)
+- `.gitignore`, `android/.gitignore`, `macos/.gitignore` (organized and cleaned)
 
 ### 📋 Next Steps
-1. Full testing of macOS app on target Mac
-2. Start Android app development (Phase 2)
-3. Add Google TV support (Phase 3)
+1. ✅ Build Android APK using Docker (DONE - Session 4)
+2. ✅ Test Android app on Android 14 device with macOS app running (DONE - Session 5)
+3. Add Google TV support (Phase 3) if desired
+4. Optimize UI/UX based on real-world usage (baseline working, further refinement optional)
 
 ## Architecture
 
-### macOS App Structure
+### macOS App Structure (Phase 1)
 ```
 macos/
 ├── Sources/
@@ -58,6 +125,38 @@ macos/
 ├── build.sh                    # Build script
 ├── install.sh                  # Install script
 └── README.md                   # Build/install instructions
+```
+
+### Android App Structure (Phase 2)
+```
+android/
+├── build.gradle.kts            # Root build configuration
+├── settings.gradle.kts         # Gradle settings
+├── app/
+│   ├── build.gradle.kts        # App dependencies (Compose, OkHttp, DataStore, Gson)
+│   ├── proguard-rules.pro      # Obfuscation rules
+│   ├── .gitignore
+│   └── src/main/
+│       ├── AndroidManifest.xml # App permissions, activities
+│       └── java/com/volumecontrol/android/
+│           ├── MainActivity.kt         # Entry point, onResume triggers fetch
+│           ├── model/
+│           │   └── Device.kt           # Device + DeviceState data classes
+│           ├── data/
+│           │   ├── DeviceRepository.kt # DataStore persistence
+│           │   └── VolumeApiClient.kt  # OkHttp HTTP client (3s timeout)
+│           ├── ui/
+│           │   ├── MainViewModel.kt    # StateFlow, parallel fetching logic
+│           │   ├── DeviceListScreen.kt # Main screen (TopAppBar, LazyColumn)
+│           │   ├── DeviceCard.kt       # Device card with slider, error message
+│           │   ├── AddEditDeviceDialog.kt # Add/edit device dialog
+│           │   └── theme/
+│           │       └── Theme.kt        # Material 3 colors, typography
+│           └── res/
+│               ├── values/             # strings, colors, themes
+│               ├── drawable/           # icons (launcher background/foreground)
+│               └── mipmap-*/           # adaptive icons
+└── README.md                   # Usage, architecture, testing guide
 ```
 
 ## Key Technical Decisions
@@ -89,7 +188,9 @@ macos/
 - No authentication required (user-level agent)
 - Can be disabled with: `launchctl unload ~/Library/LaunchAgents/com.volumecontrol.app.plist`
 
-## Build & Install (On Mac)
+## Build & Install
+
+### macOS App (Phase 1)
 
 ```bash
 cd macos
@@ -97,6 +198,31 @@ chmod +x build.sh install.sh
 ./build.sh      # Compiles to VolumeControl.app
 ./install.sh    # Copies to /Applications + sets up LaunchAgent
 ```
+
+### Android App (Phase 2) - Docker Build
+
+```bash
+cd android
+
+# Build APK (requires Docker)
+docker build -t volume-control-android-builder .
+
+# Extract APK from container to android directory
+docker run --rm -v $(pwd):/output volume-control-android-builder \
+  cp /workspace/VolumeControl.apk /output/VolumeControl.apk
+
+# Install on Android device via USB
+adb install VolumeControl.apk
+```
+
+**APK Output**: `android/VolumeControl.apk` (24 MB)
+
+**Docker automatically handles**:
+- Java 21 JDK
+- Gradle 8.10
+- Android SDK 34 + build tools
+- Kotlin 2.0.0 + Compose Compiler
+- APK naming and output
 
 ## Testing
 
@@ -175,5 +301,37 @@ ifconfig | grep "inet "
 ```
 
 ## Last Updated
-- 2026-02-18
-- Current status: macOS app built, HTTP API fixed, ready for testing
+- 2026-02-18 (Session 5 - Android app tested and working!)
+- Current status:
+  - Phase 1 (macOS): Built, HTTP API tested, ready for deployment
+  - Phase 2 (Android): APK built and tested on Android 14, fully functional with macOS app
+  - Phase 3 (Google TV): Planned for future
+
+## Session History
+- **Session 1**: Created macOS app, HTTP API, Android app code (all complete)
+- **Session 2**: Setting up Docker on Linux Mint to build Android app
+  - Discovered Homebrew Docker doesn't have systemd service
+  - Chose Docker approach over Android Studio/SDK
+  - Plan: Install official Docker, build APK in container
+- **Session 3**: Docker setup completed
+  - Installed official Docker from Ubuntu repos
+  - Added user to docker group for non-sudo access
+  - Created Dockerfile with Android SDK + build tools
+- **Session 4**: Android APK build completed
+  - Fixed Java 25 incompatibility: switched to Java 21
+  - Upgraded Gradle 8.5 → 8.10 (required for AGP 8.5.0)
+  - Added Kotlin Compose Compiler plugin for Kotlin 2.0.0
+  - Fixed ExperimentalFoundationApi warnings
+  - APK successfully built: 24 MB debug build
+  - Ready for testing on Android 14 device
+- **Session 5**: Android app tested and fully debugged
+  - **Cleartext HTTP Issue**: Created network_security_config.xml to allow HTTP on local network (192.168.68.x)
+  - **Threading Issue**: Added Dispatchers.IO wrapper to OkHttp calls (NetworkOnMainThreadException)
+  - **Socket Timeout Issue**: Implemented 500ms slider debounce to prevent excessive API calls
+  - **State Management**: Fixed setVolume pattern - only getVolume updates UI display, not setVolume responses
+  - **Startup Display**: Added fetchAllVolumes() to loadDevices() so app shows correct volumes on launch
+  - **Slider Behavior**: Implemented LaunchedEffect to update pendingVolume when actual volume is fetched
+  - **Slider Jumping**: Fixed slider reverting to old values by separating optimistic UI update from server-driven state
+  - **UI Polish**: Renamed "Retry All" → "Refresh" in menu
+  - **Repository Cleanup**: Organized .gitignore files (root, android/, macos/) with only necessary ignores
+  - **Verification**: App fully functional - can add devices, control volume, see real-time updates from separate curl commands

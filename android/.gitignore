@@ -1,0 +1,16 @@
+# Gradle
+.gradle/
+build/
+
+# Build outputs
+*.apk
+*.aab
+
+# Android SDK
+local.properties
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
