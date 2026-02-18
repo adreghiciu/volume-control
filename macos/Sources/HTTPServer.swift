@@ -56,11 +56,14 @@ class HTTPServer {
                 if let request = String(data: data, encoding: .utf8) {
                     let response = self?.handleRequest(request) ?? self?.notFoundResponse() ?? ""
                     let responseData = response.data(using: .utf8) ?? Data()
-                    connection.send(content: responseData, completion: .idempotent)
+                    connection.send(content: responseData, completion: .contentProcessed({ error in
+                        if error != nil {
+                            print("Error sending response: \(String(describing: error))")
+                        }
+                        connection.cancel()
+                    }))
                 }
-            }
-
-            if isComplete || error != nil {
+            } else if isComplete || error != nil {
                 connection.cancel()
             }
         }
