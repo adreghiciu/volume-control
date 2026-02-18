@@ -104,11 +104,32 @@ A multi-platform volume control system:
 - `android/app/src/main/res/values/strings.xml` (renamed retry menu)
 - `.gitignore`, `android/.gitignore`, `macos/.gitignore` (organized and cleaned)
 
+### ✅ Phase 3: Google TV App (COMPLETE - Session 6)
+- **Status**: Google TV app implemented as HTTP server on port 8888
+- **Architecture**: ForegroundService managing HttpServer + VolumeController
+- **Key Components**:
+  - MainActivity.kt: TV UI (Compose) with 72sp text for D-pad navigation, dark theme (#1A1A2E)
+  - VolumeService.kt: ForegroundService with START_STICKY auto-restart
+  - HttpServer.kt: ServerSocket on port 8888 (no external libs), CRLF HTTP, regex JSON parsing
+  - VolumeController.kt: AudioManager wrapper with 0-100 normalization using rounding
+  - BootReceiver.kt: Auto-starts service on TV boot (ACTION_BOOT_COMPLETED + QUICKBOOT_POWERON)
+- **HTTP API** (matches macOS/Android):
+  - GET /volume → {"volume": N}
+  - POST /volume -d '{"volume": N}' → {"volume": N}
+- **Features**:
+  - WiFi + Ethernet IP detection
+  - Silent foreground notification (IMPORTANCE_LOW)
+  - Leanback launcher intent for TV
+  - Permissions: INTERNET, FOREGROUND_SERVICE, MODIFY_AUDIO_SETTINGS, POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED
+- **Build**: Docker build to APK (VolumeControl-TV.apk)
+- **Files**: 20 new files (5 Kotlin sources, Gradle config, AndroidManifest, resources)
+
 ### 📋 Next Steps
 1. ✅ Build Android APK using Docker (DONE - Session 4)
 2. ✅ Test Android app on Android 14 device with macOS app running (DONE - Session 5)
-3. Add Google TV support (Phase 3) if desired
-4. Optimize UI/UX based on real-world usage (baseline working, further refinement optional)
+3. ✅ Implement Google TV app (Phase 3) (DONE - Session 6)
+4. ✅ Build Google TV APK using Docker (DONE - Session 7)
+5. Test Google TV app on physical TV device
 
 ## Architecture
 
@@ -157,6 +178,32 @@ android/
 │               ├── drawable/           # icons (launcher background/foreground)
 │               └── mipmap-*/           # adaptive icons
 └── README.md                   # Usage, architecture, testing guide
+```
+
+### Google TV App Structure (Phase 3)
+```
+googletv/
+├── build.gradle.kts            # Root build configuration
+├── settings.gradle.kts         # Gradle settings
+├── gradle.properties           # Gradle settings
+├── Dockerfile                  # Android SDK + Gradle 8.10 for building
+├── .gitignore
+├── app/
+│   ├── build.gradle.kts        # App dependencies (Compose only, no OkHttp/DataStore/Gson)
+│   ├── proguard-rules.pro      # Obfuscation rules
+│   └── src/main/
+│       ├── AndroidManifest.xml # TV permissions, leanback feature
+│       ├── java/com/volumecontrol/googletv/
+│       │   ├── MainActivity.kt         # Activity + ViewModel + TvScreen UI (72sp text)
+│       │   ├── VolumeService.kt        # ForegroundService, owns HttpServer lifecycle
+│       │   ├── HttpServer.kt           # ServerSocket on port 8888, CRLF HTTP, regex JSON
+│       │   ├── VolumeController.kt     # AudioManager wrapper, 0-100 normalization
+│       │   └── BootReceiver.kt         # Auto-start on TV boot
+│       └── res/
+│           ├── values/                 # strings, colors, themes (dark #1A1A2E)
+│           ├── drawable/               # icons (launcher background/foreground)
+│           └── mipmap-*/               # adaptive icons
+└── README.md                   # Build, install, API usage
 ```
 
 ## Key Technical Decisions
@@ -301,11 +348,11 @@ ifconfig | grep "inet "
 ```
 
 ## Last Updated
-- 2026-02-18 (Session 5 - Android app tested and working!)
+- 2026-02-18 (Session 7 - Google TV APK built!)
 - Current status:
   - Phase 1 (macOS): Built, HTTP API tested, ready for deployment
   - Phase 2 (Android): APK built and tested on Android 14, fully functional with macOS app
-  - Phase 3 (Google TV): Planned for future
+  - Phase 3 (Google TV): APK built successfully (22 MB), ready for testing on physical TV
 
 ## Session History
 - **Session 1**: Created macOS app, HTTP API, Android app code (all complete)
@@ -335,3 +382,20 @@ ifconfig | grep "inet "
   - **UI Polish**: Renamed "Retry All" → "Refresh" in menu
   - **Repository Cleanup**: Organized .gitignore files (root, android/, macos/) with only necessary ignores
   - **Verification**: App fully functional - can add devices, control volume, see real-time updates from separate curl commands
+- **Session 6**: Google TV app implementation (Phase 3)
+  - **Created**: 20 files for googletv/ module with complete HTTP server implementation
+  - **Architecture**: ForegroundService + HttpServer + VolumeController pattern
+  - **HttpServer.kt**: Pure Java ServerSocket (port 8888), daemon threads, CRLF HTTP responses, regex JSON parsing
+  - **VolumeController.kt**: AudioManager wrapper with 0-100 normalization (rounding, @Synchronized)
+  - **VolumeService.kt**: START_STICKY foreground service with LocalBinder, silent notification
+  - **MainActivity.kt**: TV-optimized Compose UI (72sp text, dark theme #1A1A2E), IP detection, service status
+  - **BootReceiver.kt**: Auto-start on TV boot (BOOT_COMPLETED + QUICKBOOT_POWERON)
+  - **Permissions**: INTERNET, FOREGROUND_SERVICE, MODIFY_AUDIO_SETTINGS, POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, ACCESS_NETWORK_STATE
+  - **Features**: D-pad friendly UI, WiFi+Ethernet IP detection, silent foreground notification, leanback support
+  - **Committed**: All 20 files with detailed commit message explaining architecture
+  - **Build**: Pending Docker build after user group restart (user added to docker group)
+- **Session 7**: Google TV APK build (Phase 3)
+  - **Docker Build**: Successfully built with `newgrp docker` to activate group membership
+  - **Import Fix**: Corrected `NetworkInterface` import from `android.net` → `java.net.NetworkInterface`
+  - **APK Output**: VolumeControl-TV.apk (22 MB) successfully extracted to googletv directory
+  - **Status**: Ready for testing on physical Google TV device via `adb install VolumeControl-TV.apk`
