@@ -317,6 +317,11 @@ curl -X POST http://localhost:8888/volume \
 - **Target Machine**: 2013 iMac with macOS Catalina 10.15 (x86_64)
 - **VNC**: Remmina from Linux Mint → macOS (for testing)
 - **SSH Keys**: Separate key per machine for security
+- **Docker**: Installed and user added to docker group
+  - ⚠️ **Important**: Always use `newgrp docker` before running docker commands
+  - The user is in the docker group, but bash sessions don't recognize this until `newgrp` runs
+  - Example: `newgrp docker << 'EOF' ... docker build ... EOF`
+  - See "Useful Commands" section for Docker build examples
 
 ## Future Considerations
 
@@ -327,6 +332,33 @@ curl -X POST http://localhost:8888/volume \
 
 ## Useful Commands
 
+### Docker Commands (Android/Google TV APK builds)
+```bash
+# IMPORTANT: Always use newgrp docker to activate docker group permissions
+# The user is in the docker group, but bash sessions don't recognize it until newgrp runs
+
+# Build Android APK via Docker
+newgrp docker << 'EOF'
+cd android
+docker build -t volume-control-android-builder .
+docker run --rm -v $(pwd):/output volume-control-android-builder \
+  cp /workspace/VolumeControl.apk /output/VolumeControl.apk
+EOF
+
+# Build Google TV APK via Docker
+newgrp docker << 'EOF'
+cd googletv
+docker build -t volume-control-googletv-builder .
+docker run --rm -v $(pwd):/output volume-control-googletv-builder \
+  cp /workspace/VolumeControl-TV.apk /output/VolumeControl-TV.apk
+EOF
+
+# Quick docker test (after newgrp docker)
+docker ps
+docker images | grep volume-control
+```
+
+### macOS Commands
 ```bash
 # Check if app is running
 ps aux | grep VolumeControl
