@@ -17,7 +17,7 @@ class HTTPServer {
             self?.handleConnection(connection)
         }
 
-        listener?.stateUpdateHandler = { [weak self] state in
+        listener?.stateUpdateHandler = { state in
             switch state {
             case .ready:
                 print("HTTP server listening on port 8888")
