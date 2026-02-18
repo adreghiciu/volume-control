@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.VolumeControlTV" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorBackground">@color/dark_background</item>
+        <item name="android:colorForeground">@color/dark_text</item>
+        <item name="android:windowBackground">@color/dark_background</item>
+    </style>
+</resources>

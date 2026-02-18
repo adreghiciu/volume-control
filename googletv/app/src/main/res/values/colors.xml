@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark theme colors for TV -->
+    <color name="dark_background">#1A1A2E</color>
+    <color name="dark_surface">#16213E</color>
+    <color name="dark_primary">#0F3460</color>
+    <color name="dark_accent">#E94560</color>
+    <color name="dark_text">#FFFFFF</color>
+    <color name="dark_text_secondary">#B0B0B0</color>
+</resources>

@@ -1,0 +1,49 @@
+# Build files
+/build/
+/.gradle/
+/local.properties
+/captures/
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Android Studio
+.DS_Store
+*.iml
+.gradle
+.idea/
+.classpath
+.project
+.settings/
+*.class
+*.log
+*.ctxt
+.mtj.tmp/
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+bin/
+gen/
+out/
+
+# Gradle
+gradle-app.setting
+!gradle-wrapper.jar
+
+# IDEs
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+*.app
+
+# Environment
+.env
+local.properties
