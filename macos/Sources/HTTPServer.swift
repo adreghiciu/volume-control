@@ -130,13 +130,7 @@ class HTTPServer {
             statusText = "Unknown"
         }
 
-        let responseHeaders = """
-        HTTP/1.1 \(statusCode) \(statusText)\r
-        Content-Type: application/json\r
-        Content-Length: \(body.count)\r
-        Connection: close\r
-        \r
-        """
+        let responseHeaders = "HTTP/1.1 \(statusCode) \(statusText)\r\nContent-Type: application/json\r\nContent-Length: \(body.count)\r\nConnection: close\r\n\r\n"
 
         return responseHeaders + body
     }
