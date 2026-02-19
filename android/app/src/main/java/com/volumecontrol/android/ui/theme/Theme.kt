@@ -1,6 +1,8 @@
 package com.volumecontrol.android.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -31,12 +33,41 @@ private val LightColorScheme = lightColorScheme(
     outlineVariant = Color(0xFFC8D1DB),
 )
 
+private val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFF6DB3FF),        // Lighter blue for dark mode
+    onPrimary = Color(0xFF003584),
+    primaryContainer = Color(0xFF004BAD),
+    onPrimaryContainer = Color(0xFFD6E9FF),
+    secondary = Color(0xFF00D9B8),
+    onSecondary = Color(0xFF003D35),
+    secondaryContainer = Color(0xFF00574F),
+    onSecondaryContainer = Color(0xFFB1EFDA),
+    tertiary = Color(0xFF52E5D4),
+    onTertiary = Color(0xFF003D38),
+    tertiaryContainer = Color(0xFF005652),
+    onTertiaryContainer = Color(0xFFA2F4E9),
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF0A0E1A),
+    onBackground = Color(0xFFF0F1FF),
+    surface = Color(0xFF0A0E1A),
+    onSurface = Color(0xFFF0F1FF),
+    surfaceVariant = Color(0xFF48525F),
+    onSurfaceVariant = Color(0xFFC8D1DB),
+    outlineVariant = Color(0xFF48525F),
+)
+
 @Composable
 fun VolumeControlTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
     MaterialTheme(
-        colorScheme = LightColorScheme,
+        colorScheme = colorScheme,
         typography = androidx.compose.material3.Typography(),
         content = content
     )
