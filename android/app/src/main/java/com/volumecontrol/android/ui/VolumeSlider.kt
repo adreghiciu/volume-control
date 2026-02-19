@@ -134,16 +134,6 @@ fun VolumeSlider(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Middle Speaker Icon
-            Icon(
-                imageVector = SpeakerIcon,
-                contentDescription = "Volume",
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
             // Percentage Text
             Text(
                 text = "$value%",

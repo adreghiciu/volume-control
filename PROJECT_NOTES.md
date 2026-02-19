@@ -325,11 +325,12 @@ curl -X POST http://localhost:8888/volume \
    - Project on GitHub: git@github.com:adreghiciu/volume-control.git
    - License: MIT
    - Commits include co-authored-by: Claude Haiku 4.5
-   - ⚠️ **Important Workflow**: ASK BEFORE COMMITTING
-     - After implementing features/fixes, ask user for approval before creating commits
+   - ⚠️ **CRITICAL Workflow**: DO NOT COMMIT/PUSH AUTOMATICALLY
+     - After implementing features/fixes, make changes and build/test but DO NOT commit
+     - Wait for explicit user instruction: "commit" or "push"
      - User may want to test functionality first before code is committed/pushed
-     - Only push after explicit user approval
-     - This ensures quality testing and prevents premature commits
+     - This ensures quality testing and prevents premature/unwanted commits
+     - Example workflow: Make code → Build/test → Wait for user → User says "commit" → Then commit & push
 
 ## Environment
 

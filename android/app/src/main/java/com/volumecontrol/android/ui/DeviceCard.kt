@@ -62,7 +62,7 @@ fun DeviceCard(
                 onLongClick = { showMenu = true }
             ),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1A2A3A)
+            containerColor = Color(0xFF1A212C)
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
