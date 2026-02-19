@@ -10,8 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
@@ -20,7 +21,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.volumecontrol.android.R
 import com.volumecontrol.android.model.DeviceState
 
@@ -53,35 +54,64 @@ fun DeviceCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
             .combinedClickable(
                 onClick = {},
                 onLongClick = { showMenu = true }
             )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // Header: Device name + Status
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = deviceState.device.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = deviceState.device.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Text(
+                        text = deviceState.device.host,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+
                 Box {
+                    // Status indicator
                     if (deviceState.isLoading) {
                         CircularProgressIndicator(
-                            modifier = Modifier.then(
-                                Modifier
-                                    .align(Alignment.Center)
-                                    .height(20.dp)
-                            ),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .height(24.dp),
                             strokeWidth = 2.dp
                         )
+                    } else if (deviceState.error != null) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Error",
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .height(24.dp),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Connected",
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .height(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
+
                     DropdownMenu(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
@@ -110,55 +140,42 @@ fun DeviceCard(
                 }
             }
 
+            // Error message (if any)
             if (deviceState.error != null) {
                 Text(
                     text = deviceState.error,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = 8.dp),
+                    fontSize = 12.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // Volume slider
             val volume = deviceState.volume ?: 0
             var pendingVolume by remember { mutableStateOf(volume) }
             var debounceJob by remember { mutableStateOf<Job?>(null) }
             val scope = rememberCoroutineScope()
 
-            // Update pendingVolume when the actual volume is fetched
             LaunchedEffect(volume) {
                 pendingVolume = volume
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Slider(
-                    value = pendingVolume.toFloat(),
-                    onValueChange = { newValue ->
-                        val intValue = newValue.toInt()
-                        pendingVolume = intValue
+            VolumeSlider(
+                value = pendingVolume,
+                onValueChange = { newValue ->
+                    pendingVolume = newValue
 
-                        debounceJob?.cancel()
-                        debounceJob = scope.launch {
-                            delay(500) // Wait 500ms after user stops moving
-                            onVolumeChange(intValue)
-                        }
-                    },
-                    valueRange = 0f..100f,
-                    modifier = Modifier.weight(1f),
-                    enabled = deviceState.error == null && !deviceState.isLoading,
-                    steps = 0
-                )
-                Text(
-                    text = "$pendingVolume%",
-                    modifier = Modifier.width(40.dp),
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+                    debounceJob?.cancel()
+                    debounceJob = scope.launch {
+                        delay(500)
+                        onVolumeChange(newValue)
+                    }
+                },
+                enabled = deviceState.error == null && !deviceState.isLoading
+            )
         }
     }
 }
