@@ -44,8 +44,11 @@ class VolumeController: ObservableObject {
             try process.run()
             process.waitUntilExit()
 
+            // Update state synchronously first, then notify UI
+            self.volume = clampedVolume
             DispatchQueue.main.async {
-                self.volume = clampedVolume
+                // Trigger UI update
+                self.objectWillChange.send()
             }
         } catch {
             print("Error setting volume: \(error)")
@@ -84,8 +87,11 @@ class VolumeController: ObservableObject {
             try process.run()
             process.waitUntilExit()
 
+            // Update state synchronously first, then notify UI
+            self.muted = muted
             DispatchQueue.main.async {
-                self.muted = muted
+                // Trigger UI update
+                self.objectWillChange.send()
             }
         } catch {
             print("Error setting muted status: \(error)")
