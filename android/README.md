@@ -7,11 +7,13 @@ An Android app that remotely controls volume on macOS devices via HTTP API.
 - **Multi-device management**: Add, edit, and delete devices (name, IP, port)
 - **Persistent storage**: Devices saved between app launches via DataStore
 - **Real-time volume control**: Sliders for each device with responsive updates
-- **Parallel fetching**: Fetches volume from all devices simultaneously on app focus
+- **Mute toggle**: Click the speaker icon to mute/unmute each device
+- **Mute all/Unmute all**: Quick menu options to control all devices at once
+- **Parallel fetching**: Fetches volume and mute status from all devices simultaneously on app focus
 - **Error handling**: Shows "unreachable" messages for offline devices
 - **Non-blocking UI**: All network calls are asynchronous with coroutines
 - **Network timeout**: 3-second timeout prevents hanging on unreachable devices
-- **Retry mechanism**: "Retry All" option in menu to re-fetch all volumes
+- **Refresh mechanism**: "Refresh" option in menu to re-fetch all volumes and mute states
 
 ## Architecture
 
@@ -79,6 +81,20 @@ Alternatively, copy `VolumeControl.apk` to device and install manually.
 - Drag slider to adjust volume
 - Changes are sent immediately to the device
 
+### Toggle Mute
+- Tap the speaker icon on any device to toggle mute
+- Icon shows speaker when unmuted, speaker with slash when muted
+- Mute state is synced with the device in real-time
+
+### Mute All / Unmute All
+- Tap **⋮** menu → **Mute All** to mute all devices
+- Tap **⋮** menu → **Unmute All** to unmute all devices
+- Menu option changes based on current mute state
+
+### Refresh
+- Tap **⋮** menu → **Refresh** to fetch latest volume and mute status from all devices
+- Useful if device states changed outside this app
+
 ### Edit Device
 1. Long-press device card
 2. Select **Edit**
@@ -93,27 +109,39 @@ Alternatively, copy `VolumeControl.apk` to device and install manually.
 - Useful if devices were unreachable and now available
 
 ### App Focus
-- When app comes to foreground, volumes are fetched from all devices
+- When app comes to foreground, volumes and mute states are fetched from all devices
 - No manual action needed; updates arrive as responses come in
 
 ## API Integration
 
-The app communicates with the **Phase 1 macOS app** via HTTP:
+The app communicates with **macOS** and **Google TV** apps via HTTP:
 
-- **GET `/volume`** → Returns `{"volume": 0-100}`
-- **POST `/volume`** → Accepts `{"volume": <int>}`, sets volume
+- **GET `/`** → Returns `{"volume": 0-100, "muted": true|false}`
+- **POST `/`** → Accepts optional `{"volume": <int>}` and/or `{"muted": <bool>}`, returns current state
 
 Example:
 ```bash
 # From Android device (if macOS is at 192.168.1.100:8888)
-adb shell curl http://192.168.1.100:8888/volume
-# Returns: {"volume": 75}
+adb shell curl http://192.168.1.100:8888/
+# Returns: {"volume": 75, "muted": false}
 
-adb shell curl -X POST http://192.168.1.100:8888/volume \
+adb shell curl -X POST http://192.168.1.100:8888/ \
     -H "Content-Type: application/json" \
     -d '{"volume": 50}'
-# Returns: {"volume": 50}
+# Returns: {"volume": 50, "muted": false}
+
+adb shell curl -X POST http://192.168.1.100:8888/ \
+    -H "Content-Type: application/json" \
+    -d '{"muted": true}'
+# Returns: {"volume": 75, "muted": true}
+
+adb shell curl -X POST http://192.168.1.100:8888/ \
+    -H "Content-Type: application/json" \
+    -d '{"volume": 40, "muted": false}'
+# Returns: {"volume": 40, "muted": false}
 ```
+
+**Note**: You can set just volume, just muted, or both. Omitted fields won't be changed.
 
 ## Testing
 

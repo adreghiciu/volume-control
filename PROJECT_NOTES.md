@@ -401,11 +401,11 @@ ifconfig | grep "inet "
 ```
 
 ## Last Updated
-- 2026-02-19 (Session 8 - Android dark theme fixes!)
+- 2026-02-19 (Session 9 - Mute functionality fully implemented and working!)
 - Current status:
-  - Phase 1 (macOS): Built, HTTP API tested, ready for deployment
-  - Phase 2 (Android): APK built with dark theme splash screen & launcher icon, fully functional with macOS app
-  - Phase 3 (Google TV): APK built successfully (22 MB), ready for testing on physical TV
+  - Phase 1 (macOS): Mute feature complete, HTTP API on root / endpoint
+  - Phase 2 (Android): Mute feature complete with speaker/muted icons, Mute All/Unmute All menu
+  - Phase 3 (Google TV): Mute feature complete, all three apps fully functional
 
 ## Session History
 - **Session 1**: Created macOS app, HTTP API, Android app code (all complete)
@@ -460,3 +460,45 @@ ifconfig | grep "inet "
   - **Rebuild**: APK rebuilt with theme changes using Docker
   - **Install**: Used reinstall.sh to preserve device configuration during update
   - **Documentation**: Updated PROJECT_NOTES.md with quick install workflow using reinstall.sh
+- **Session 9**: Mute functionality implementation across all platforms (COMPLETE)
+  - **API Redesign**: Changed all three apps from `/volume` endpoint to root `/` endpoint
+  - **Response format**: All apps now return `{"volume": 0-100, "muted": true|false}`
+  - **Request format**: POST accepts optional `volume` and/or `muted` fields (omitted fields unchanged)
+
+  **macOS App**:
+  - Added `@Published var muted` property to VolumeController
+  - Added `getMutedStatus()` using osascript: `output muted of (get volume settings)`
+  - Added `setMuted()` using osascript: `set volume output muted`
+  - Fixed async/sync issue: moved state updates to synchronous path, dispatch UI notifications async
+  - Updated HTTPServer to use root `/` endpoint returning both volume and muted
+  - Updated install.sh with correct API examples
+
+  **Google TV App**:
+  - Added `isMuted()` and `setMuted()` methods using AudioManager.setStreamMute()
+  - Updated HttpServer to use root `/` endpoint
+  - Returns both volume and muted in all responses
+  - Supports optional fields in POST requests
+
+  **Android App**:
+  - Created `MuteableVolumeSlider` Composable with clickable speaker/muted icon
+  - Added `MutedIcon` (speaker without sound waves)
+  - Updated DeviceCard to use MuteableVolumeSlider
+  - Added `onMuteToggle` callback through DeviceListScreen to MainActivity to ViewModel
+  - Updated MainViewModel with `toggleMute()`, `muteAll()`, `unmuteAll()` methods
+  - Added "Mute All"/"Unmute All" menu items (context-aware based on state)
+  - Updated VolumeApiClient with `getStatus()`, `setStatus()`, `setMuted()` methods
+  - Created `VolumeStatus` data class holding both volume and muted
+  - Fixed type system issues with ApiResult error handling
+  - Updated strings.xml with mute menu items
+
+  **Testing & Fixes**:
+  - Verified all three apps working with correct state sync
+  - Fixed macOS setMuted/setVolume async issue where HTTP response read old values
+  - Tested mute toggle, individual device mute, mute all/unmute all
+  - Android app successfully controls both macOS and Google TV devices
+
+  **Documentation**:
+  - Updated README.md for all three platforms (macOS, Android, Google TV)
+  - Added mute feature documentation with API examples
+  - Updated PROJECT_NOTES.md with implementation details
+  - All READMEs now document the new root `/` endpoint and optional fields

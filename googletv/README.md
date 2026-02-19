@@ -4,8 +4,9 @@ A Google TV app that runs an HTTP server to control TV volume from any device on
 
 ## Features
 
-- **HTTP API server**: Listens on port 8888 for volume control requests
-- **GET/POST endpoints**: `GET /volume` and `POST /volume` for control
+- **HTTP API server**: Listens on port 8888 for volume and mute control requests
+- **GET/POST endpoints**: `GET /` and `POST /` for full control
+- **Mute control**: Get and set mute status via HTTP API
 - **Auto-start on boot**: Runs as a foreground service that persists across reboots
 - **Network detection**: Displays WiFi and Ethernet IP addresses in the UI
 - **D-pad friendly UI**: Large 72sp text optimized for TV remote navigation
@@ -103,24 +104,38 @@ adb install googletv/VolumeControl-TV.apk
 
 The app provides the same HTTP API as the macOS app:
 
-- **GET `/volume`** → Returns `{"volume": 0-100}`
-- **POST `/volume`** → Accepts `{"volume": <int>}`, sets volume
+- **GET `/`** → Returns `{"volume": 0-100, "muted": true|false}`
+- **POST `/`** → Accepts optional `{"volume": <int>}` and/or `{"muted": <bool>}`
 
 ### Usage Examples
 
 ```bash
 # From your Linux machine (if TV is at 192.168.68.106:8888)
 
-# Get current volume
-curl http://192.168.68.106:8888/volume
-# Returns: {"volume": 75}
+# Get current volume and mute status
+curl http://192.168.68.106:8888/
+# Returns: {"volume": 75, "muted": false}
 
 # Set volume to 50%
-curl -X POST http://192.168.68.106:8888/volume \
+curl -X POST http://192.168.68.106:8888/ \
      -H "Content-Type: application/json" \
      -d '{"volume": 50}'
-# Returns: {"volume": 50}
+# Returns: {"volume": 50, "muted": false}
+
+# Mute the TV
+curl -X POST http://192.168.68.106:8888/ \
+     -H "Content-Type: application/json" \
+     -d '{"muted": true}'
+# Returns: {"volume": 75, "muted": true}
+
+# Set volume and mute together
+curl -X POST http://192.168.68.106:8888/ \
+     -H "Content-Type: application/json" \
+     -d '{"volume": 40, "muted": false}'
+# Returns: {"volume": 40, "muted": false}
 ```
+
+**Note**: You can set just volume, just muted, or both. Omitted fields won't be changed.
 
 ### Control from Android Phone
 Use the **Volume Control Android App** (Phase 2):
@@ -139,16 +154,21 @@ Use the **HTTP API** directly with `curl` or any HTTP client
 
 ### Verify
 ```bash
-# Get volume
-curl http://<TV_IP>:8888/volume
+# Get volume and mute status
+curl http://<TV_IP>:8888/
 
 # Set volume to 30%
-curl -X POST http://<TV_IP>:8888/volume \
+curl -X POST http://<TV_IP>:8888/ \
      -H "Content-Type: application/json" \
      -d '{"volume": 30}'
 
-# Verify it was set
-curl http://<TV_IP>:8888/volume
+# Mute the TV
+curl -X POST http://<TV_IP>:8888/ \
+     -H "Content-Type: application/json" \
+     -d '{"muted": true}'
+
+# Verify changes
+curl http://<TV_IP>:8888/
 ```
 
 ### Manual Testing on TV

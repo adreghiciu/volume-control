@@ -6,10 +6,11 @@ A minimal macOS menu bar application that provides a SwiftUI-based volume contro
 
 - **Status Bar Icon**: Displays a speaker icon in the macOS menu bar
 - **SwiftUI Popover**: Click the icon to open a volume slider control
-- **System Volume Control**: Uses `osascript` to control system audio output
-- **HTTP API**: Listen on port 8888 for remote volume control
-  - `GET /volume` - Get current volume level
-  - `POST /volume` - Set volume level
+- **System Volume Control**: Uses `osascript` to control system audio output and mute state
+- **Mute Toggle**: Click the speaker icon to toggle mute on/off
+- **HTTP API**: Listen on port 8888 for remote volume and mute control
+  - `GET /` - Get current volume and mute status
+  - `POST /` - Set volume and/or mute status (fields optional)
 - **Auto-start on Login**: Automatically launches via LaunchAgent
 
 ## Prerequisites
@@ -87,27 +88,53 @@ The app will start immediately after installation and run in the background.
 
 The app listens on `http://localhost:8888` for API requests.
 
-**Get current volume:**
+**Get current volume and mute status:**
 ```bash
-curl http://localhost:8888/volume
+curl http://localhost:8888/
 ```
 
 Response:
 ```json
-{"volume": 75}
+{"volume": 75, "muted": false}
 ```
 
 **Set volume to specific level:**
 ```bash
-curl -X POST http://localhost:8888/volume \
+curl -X POST http://localhost:8888/ \
      -H "Content-Type: application/json" \
      -d '{"volume": 50}'
 ```
 
 Response:
 ```json
-{"volume": 50}
+{"volume": 50, "muted": false}
 ```
+
+**Toggle mute:**
+```bash
+curl -X POST http://localhost:8888/ \
+     -H "Content-Type: application/json" \
+     -d '{"muted": true}'
+```
+
+Response:
+```json
+{"volume": 75, "muted": true}
+```
+
+**Set both volume and mute:**
+```bash
+curl -X POST http://localhost:8888/ \
+     -H "Content-Type: application/json" \
+     -d '{"volume": 50, "muted": false}'
+```
+
+Response:
+```json
+{"volume": 50, "muted": false}
+```
+
+**Note**: When setting values, you can omit fields that you don't want to change. For example, `{"muted": true}` will toggle mute while keeping volume unchanged.
 
 ### Auto-Start on Login
 
