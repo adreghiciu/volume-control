@@ -310,6 +310,11 @@ curl -X POST http://localhost:8888/volume \
    - Project on GitHub: git@github.com:adreghiciu/volume-control.git
    - License: MIT
    - Commits include co-authored-by: Claude Haiku 4.5
+   - ⚠️ **Important Workflow**: ASK BEFORE COMMITTING
+     - After implementing features/fixes, ask user for approval before creating commits
+     - User may want to test functionality first before code is committed/pushed
+     - Only push after explicit user approval
+     - This ensures quality testing and prevents premature commits
 
 ## Environment
 
