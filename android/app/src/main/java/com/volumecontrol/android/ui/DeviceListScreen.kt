@@ -34,9 +34,15 @@ fun DeviceListScreen(
     onEditDevice: (Device) -> Unit,
     onDeleteDevice: (String) -> Unit,
     onVolumeChange: (Device, Int) -> Unit,
+    onMuteToggle: (Device) -> Unit,
+    onMuteAll: () -> Unit,
+    onUnmuteAll: () -> Unit,
     onRetryAll: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+
+    // Determine if all devices are muted
+    val allDevicesMuted = uiState.devices.isNotEmpty() && uiState.devices.all { it.muted }
 
     Scaffold(
         topBar = {
@@ -59,6 +65,23 @@ fun DeviceListScreen(
                                 onRetryAll()
                             }
                         )
+                        if (allDevicesMuted) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.unmute_all)) },
+                                onClick = {
+                                    showMenu = false
+                                    onUnmuteAll()
+                                }
+                            )
+                        } else {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.mute_all)) },
+                                onClick = {
+                                    showMenu = false
+                                    onMuteAll()
+                                }
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.add_device)) },
                             onClick = {
@@ -88,6 +111,9 @@ fun DeviceListScreen(
                     deviceState = deviceState,
                     onVolumeChange = { volume ->
                         onVolumeChange(deviceState.device, volume)
+                    },
+                    onMuteToggle = {
+                        onMuteToggle(deviceState.device)
                     },
                     onEdit = {
                         onEditDevice(deviceState.device)

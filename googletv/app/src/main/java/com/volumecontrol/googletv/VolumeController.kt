@@ -39,4 +39,20 @@ class VolumeController(context: Context) {
      * Get the maximum volume steps on this device
      */
     fun getMaxVolume(): Int = maxVolume
+
+    /**
+     * Get muted status
+     */
+    @Synchronized
+    fun isMuted(): Boolean {
+        return audioManager.isStreamMute(AudioManager.STREAM_MUSIC)
+    }
+
+    /**
+     * Set muted status
+     */
+    @Synchronized
+    fun setMuted(muted: Boolean) {
+        audioManager.setStreamMute(AudioManager.STREAM_MUSIC, muted)
+    }
 }

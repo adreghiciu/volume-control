@@ -106,8 +106,8 @@ class HttpServer(
 
             // Route request
             val responseBody = when {
-                path == "/volume" && method == "GET" -> handleGetVolume()
-                path == "/volume" && method == "POST" -> handlePostVolume(body)
+                (path == "/" || path.isEmpty()) && method == "GET" -> handleGetStatus()
+                (path == "/" || path.isEmpty()) && method == "POST" -> handlePostStatus(body)
                 else -> createJsonResponse(mapOf("error" to "Not found"))
             }
 
@@ -131,26 +131,35 @@ class HttpServer(
         }
     }
 
-    private fun handleGetVolume(): String {
+    private fun handleGetStatus(): String {
         val volume = volumeController.getVolume()
-        return createJsonResponse(mapOf("volume" to volume))
+        val muted = volumeController.isMuted()
+        return createJsonResponse(mapOf("volume" to volume, "muted" to muted))
     }
 
-    private fun handlePostVolume(body: String): String {
+    private fun handlePostStatus(body: String): String {
         return try {
-            // Simple regex-based JSON parsing for volume value
-            val regex = """"volume"\s*:\s*(\d+)""".toRegex()
-            val match = regex.find(body)
-            if (match != null) {
-                val newVolume = match.groupValues[1].toInt()
+            // Parse volume if present
+            val volumeRegex = """"volume"\s*:\s*(\d+)""".toRegex()
+            val volumeMatch = volumeRegex.find(body)
+            if (volumeMatch != null) {
+                val newVolume = volumeMatch.groupValues[1].toInt()
                 volumeController.setVolume(newVolume)
-                val currentVolume = volumeController.getVolume()
-                createJsonResponse(mapOf("volume" to currentVolume))
-            } else {
-                createJsonResponse(mapOf("error" to "Invalid JSON"))
             }
+
+            // Parse muted if present
+            val mutedRegex = """"muted"\s*:\s*(true|false)""".toRegex()
+            val mutedMatch = mutedRegex.find(body)
+            if (mutedMatch != null) {
+                val newMuted = mutedMatch.groupValues[1].toBoolean()
+                volumeController.setMuted(newMuted)
+            }
+
+            val currentVolume = volumeController.getVolume()
+            val currentMuted = volumeController.isMuted()
+            createJsonResponse(mapOf("volume" to currentVolume, "muted" to currentMuted))
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing volume", e)
+            Log.e(TAG, "Error parsing status", e)
             createJsonResponse(mapOf("error" to "Invalid request"))
         }
     }

@@ -48,6 +48,7 @@ import com.volumecontrol.android.model.DeviceState
 fun DeviceCard(
     deviceState: DeviceState,
     onVolumeChange: (Int) -> Unit,
+    onMuteToggle: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -168,9 +169,10 @@ fun DeviceCard(
                 pendingVolume = volume
             }
 
-            VolumeSlider(
-                value = pendingVolume,
-                onValueChange = { newValue ->
+            MuteableVolumeSlider(
+                volume = pendingVolume,
+                muted = deviceState.muted,
+                onVolumeChange = { newValue ->
                     pendingVolume = newValue
 
                     debounceJob?.cancel()
@@ -179,6 +181,7 @@ fun DeviceCard(
                         onVolumeChange(newValue)
                     }
                 },
+                onMuteToggle = onMuteToggle,
                 enabled = deviceState.error == null && !deviceState.isLoading
             )
         }

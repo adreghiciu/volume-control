@@ -12,4 +12,6 @@
     <string name="delete">Delete</string>
     <string name="error_unreachable">Error: unreachable</string>
     <string name="volume_label">Volume</string>
+    <string name="mute_all">Mute All</string>
+    <string name="unmute_all">Unmute All</string>
 </resources>

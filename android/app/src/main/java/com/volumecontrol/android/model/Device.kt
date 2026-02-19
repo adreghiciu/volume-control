@@ -12,6 +12,7 @@ data class Device(
 data class DeviceState(
     val device: Device,
     val volume: Int? = null,        // null = not yet fetched
+    val muted: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null
 )

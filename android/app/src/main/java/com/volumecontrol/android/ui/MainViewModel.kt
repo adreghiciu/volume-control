@@ -45,10 +45,14 @@ class MainViewModel(
         _uiState.value.devices.forEach { deviceState ->
             viewModelScope.launch {
                 updateDevice(deviceState.device.id) { it.copy(isLoading = true, error = null) }
-                val result = apiClient.getVolume(deviceState.device)
+                val result = apiClient.getStatus(deviceState.device)
                 updateDevice(deviceState.device.id) {
                     when (result) {
-                        is ApiResult.Success -> it.copy(volume = result.data, isLoading = false)
+                        is ApiResult.Success -> it.copy(
+                            volume = result.data.volume,
+                            muted = result.data.muted,
+                            isLoading = false
+                        )
                         is ApiResult.Error -> it.copy(error = result.message, isLoading = false)
                     }
                 }
@@ -131,6 +135,67 @@ class MainViewModel(
             _uiState.value = _uiState.value.copy(
                 devices = _uiState.value.devices.filterNot { it.device.id == id }
             )
+        }
+    }
+
+    fun toggleMute(device: Device) {
+        viewModelScope.launch {
+            val currentState = _uiState.value.devices.find { it.device.id == device.id } ?: return@launch
+            val newMuted = !currentState.muted
+
+            // Optimistically update state
+            updateDevice(device.id) { it.copy(muted = newMuted, error = null) }
+
+            val result = apiClient.setMuted(device, newMuted)
+            when (result) {
+                is ApiResult.Success -> {
+                    updateDevice(device.id) { it.copy(muted = result.data.muted, error = null) }
+                }
+                is ApiResult.Error -> {
+                    updateDevice(device.id) { it.copy(error = result.message) }
+                    fetchAllVolumes()
+                }
+            }
+        }
+    }
+
+    fun muteAll() {
+        _uiState.value.devices.forEach { deviceState ->
+            viewModelScope.launch {
+                val result = apiClient.setMuted(deviceState.device, true)
+                when (result) {
+                    is ApiResult.Success -> {
+                        updateDevice(deviceState.device.id) {
+                            it.copy(muted = true, error = null)
+                        }
+                    }
+                    is ApiResult.Error -> {
+                        updateDevice(deviceState.device.id) {
+                            it.copy(error = result.message)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun unmuteAll() {
+        _uiState.value.devices.forEach { deviceState ->
+            viewModelScope.launch {
+                val result = apiClient.setMuted(deviceState.device, false)
+                when (result) {
+                    is ApiResult.Success -> {
+                        updateDevice(deviceState.device.id) {
+                            it.copy(muted = false, error = null)
+                        }
+                    }
+                    is ApiResult.Error -> {
+                        updateDevice(deviceState.device.id) {
+                            it.copy(error = result.message)
+                        }
+                    }
+                }
+            }
         }
     }
 

@@ -38,6 +38,9 @@ class MainActivity : ComponentActivity() {
                     onEditDevice = { device -> viewModel.showEditDeviceDialog(device) },
                     onDeleteDevice = { id -> viewModel.deleteDevice(id) },
                     onVolumeChange = { device, volume -> viewModel.setVolume(device, volume) },
+                    onMuteToggle = { device -> viewModel.toggleMute(device) },
+                    onMuteAll = { viewModel.muteAll() },
+                    onUnmuteAll = { viewModel.unmuteAll() },
                     onRetryAll = { viewModel.retryAll() }
                 )
 

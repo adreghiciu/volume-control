@@ -79,12 +79,12 @@ class HTTPServer {
         let method = String(components[0])
         let path = String(components[1])
 
-        if method == "GET" && path == "/volume" {
-            return getVolumeResponse()
-        } else if method == "POST" && path == "/volume" {
+        if method == "GET" && (path == "/" || path.isEmpty) {
+            return getStatusResponse()
+        } else if method == "POST" && (path == "/" || path.isEmpty) {
             if let bodyStart = request.range(of: "\r\n\r\n") ?? request.range(of: "\n\n") {
                 let body = String(request[bodyStart.upperBound...])
-                return setVolumeResponse(body: body)
+                return setStatusResponse(body: body)
             }
             return badRequestResponse()
         }
@@ -92,18 +92,26 @@ class HTTPServer {
         return notFoundResponse()
     }
 
-    private func getVolumeResponse() -> String {
+    private func getStatusResponse() -> String {
         let volume = volumeController.volume
-        let body = "{\"volume\": \(volume)}"
+        let muted = volumeController.muted
+        let body = "{\"volume\": \(volume), \"muted\": \(muted)}"
         return httpResponse(statusCode: 200, body: body)
     }
 
-    private func setVolumeResponse(body: String) -> String {
+    private func setStatusResponse(body: String) -> String {
         if let jsonData = body.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
-           let volume = json["volume"] as? NSNumber {
-            volumeController.setVolume(volume.intValue)
-            let responseBody = "{\"volume\": \(volumeController.volume)}"
+           let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
+
+            if let volume = json["volume"] as? NSNumber {
+                volumeController.setVolume(volume.intValue)
+            }
+
+            if let muted = json["muted"] as? NSNumber {
+                volumeController.setMuted(muted.boolValue)
+            }
+
+            let responseBody = "{\"volume\": \(volumeController.volume), \"muted\": \(volumeController.muted)}"
             return httpResponse(statusCode: 200, body: responseBody)
         }
         return badRequestResponse()
