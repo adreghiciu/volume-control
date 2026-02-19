@@ -246,8 +246,16 @@ chmod +x build.sh install.sh
 ./install.sh    # Copies to /Applications + sets up LaunchAgent
 ```
 
-### Android App (Phase 2) - Docker Build
+### Android App (Phase 2) - Docker Build & Install
 
+**Quick Install** (preserves configured devices):
+```bash
+cd android
+chmod +x reinstall.sh
+./reinstall.sh  # Backs up devices → uninstalls old → installs new → restores devices
+```
+
+**Manual Build & Install**:
 ```bash
 cd android
 
@@ -270,6 +278,13 @@ adb install VolumeControl.apk
 - Android SDK 34 + build tools
 - Kotlin 2.0.0 + Compose Compiler
 - APK naming and output
+
+**Using reinstall.sh**:
+- ✅ Automatically backs up DataStore (configured devices)
+- ✅ Uninstalls old version
+- ✅ Installs new APK
+- ✅ Restores device configuration
+- ✅ Saves backup to `/tmp/volume-control-backup-*` for 24h safety
 
 ## Testing
 
@@ -385,10 +400,10 @@ ifconfig | grep "inet "
 ```
 
 ## Last Updated
-- 2026-02-18 (Session 7 - Google TV APK built!)
+- 2026-02-19 (Session 8 - Android dark theme fixes!)
 - Current status:
   - Phase 1 (macOS): Built, HTTP API tested, ready for deployment
-  - Phase 2 (Android): APK built and tested on Android 14, fully functional with macOS app
+  - Phase 2 (Android): APK built with dark theme splash screen & launcher icon, fully functional with macOS app
   - Phase 3 (Google TV): APK built successfully (22 MB), ready for testing on physical TV
 
 ## Session History
@@ -436,3 +451,11 @@ ifconfig | grep "inet "
   - **Import Fix**: Corrected `NetworkInterface` import from `android.net` → `java.net.NetworkInterface`
   - **APK Output**: VolumeControl-TV.apk (22 MB) successfully extracted to googletv directory
   - **Status**: Ready for testing on physical Google TV device via `adb install VolumeControl-TV.apk`
+- **Session 8**: Android dark theme fixes (Phase 2 Polish)
+  - **Theme Issue**: Splash screen and launcher icon were white/light, conflicting with dark Compose UI
+  - **Fixed**: Updated themes.xml from `Theme.Material.Light.NoActionBar` → `Theme.Material.NoActionBar` (respects system dark mode)
+  - **Launcher Icon**: Changed background #3DDC84 (green) → #0A0E1A (dark) to match dark theme
+  - **Speaker Icon**: Changed foreground #000000 (black) → #6DB3FF (light blue) for visibility on dark background
+  - **Rebuild**: APK rebuilt with theme changes using Docker
+  - **Install**: Used reinstall.sh to preserve device configuration during update
+  - **Documentation**: Updated PROJECT_NOTES.md with quick install workflow using reinstall.sh
