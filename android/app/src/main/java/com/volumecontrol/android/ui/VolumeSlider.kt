@@ -100,7 +100,7 @@ fun VolumeSlider(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Speaker Icon
+            // Left Speaker Icon
             Icon(
                 imageVector = SpeakerIcon,
                 contentDescription = "Volume",
@@ -131,6 +131,16 @@ fun VolumeSlider(
                     )
                 )
             }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Middle Speaker Icon
+            Icon(
+                imageVector = SpeakerIcon,
+                contentDescription = "Volume",
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
 
             Spacer(modifier = Modifier.width(12.dp))
 

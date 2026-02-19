@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -34,6 +35,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -58,7 +60,10 @@ fun DeviceCard(
             .combinedClickable(
                 onClick = {},
                 onLongClick = { showMenu = true }
-            )
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1A2A3A)
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Header: Device name + Status
@@ -77,7 +82,7 @@ fun DeviceCard(
                     Text(
                         text = deviceState.device.host,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color(0xFF7A92A6),
                         fontSize = 12.sp,
                         modifier = Modifier.padding(top = 2.dp)
                     )
