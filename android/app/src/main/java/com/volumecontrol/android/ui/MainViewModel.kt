@@ -227,8 +227,7 @@ class MainViewModel(
             val device = Device(name = name, host = host, port = port)
             repository.addDevice(device)
             _uiState.value = _uiState.value.copy(
-                devices = _uiState.value.devices + DeviceState(device = device),
-                showDiscoveryScreen = false
+                devices = _uiState.value.devices + DeviceState(device = device)
             )
             // Fetch volume for the newly added device
             fetchAllVolumes()
