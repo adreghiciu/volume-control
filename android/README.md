@@ -14,6 +14,8 @@ An Android app that remotely controls volume on macOS devices via HTTP API.
 - **Non-blocking UI**: All network calls are asynchronous with coroutines
 - **Network timeout**: 3-second timeout prevents hanging on unreachable devices
 - **Refresh mechanism**: "Refresh" option in menu to re-fetch all volumes and mute states
+- **mDNS Device Discovery**: Automatically discover devices on local network using Discover feature
+- **Duplicate prevention**: Automatically hides "Add" button if device already exists by IP:port
 
 ## Architecture
 
@@ -73,9 +75,14 @@ Alternatively, copy `VolumeControl.apk` to device and install manually.
 ## Usage
 
 ### Add Device
-1. Tap **+** button or **Add Device** from menu
-2. Enter device name, IP address, and port (default 8888)
-3. Tap **Save**
+1. Tap **+** button or **Add Manually** from menu to manually enter details
+   - Enter device name, IP address, and port (default 8888)
+   - Tap **Save**
+2. Or use **Discover** from menu to auto-discover devices on your network
+   - Tap **Discover** to scan for nearby devices via mDNS
+   - Tap **Add** next to any discovered device to add it
+   - The "Add" button automatically hides if device is already configured
+   - Close the discovery screen with the back button when done
 
 ### Control Volume
 - Drag slider to adjust volume
@@ -178,11 +185,13 @@ android/
 │           │   └── Device.kt           # Data classes
 │           ├── data/
 │           │   ├── DeviceRepository.kt # DataStore persistence
-│           │   └── VolumeApiClient.kt  # OkHttp HTTP client
+│           │   ├── VolumeApiClient.kt  # OkHttp HTTP client
+│           │   └── DeviceDiscovery.kt  # mDNS device discovery
 │           └── ui/
 │               ├── MainViewModel.kt    # StateFlow, business logic
 │               ├── DeviceListScreen.kt # Main screen
 │               ├── DeviceCard.kt       # Device UI component
+│               ├── DiscoveryScreen.kt  # Device discovery UI
 │               ├── AddEditDeviceDialog.kt # Add/edit dialog
 │               └── theme/
 │                   └── Theme.kt        # Material 3 colors + typography
@@ -193,14 +202,12 @@ android/
 1. **No authentication**: Assumes local network is trusted (no API key needed)
 2. **One control per device**: Only volume control, no other macOS features
 3. **No offline queue**: Requests fail if device is unreachable (intentional, per plan)
-4. **Manual IP entry**: No mDNS/Bonjour discovery (simplifies code, user enters IP)
-5. **Android 14+ only**: Targets modern API to avoid legacy code
+4. **Android 14+ only**: Targets modern API to avoid legacy code
+5. **Discovery on same network**: mDNS discovery only works for devices on the same local network
 
-## Future Enhancements (Not in Phase 2)
+## Future Enhancements
 
 - Bluetooth volume control
-- Google TV support (Phase 3)
-- Device discovery via mDNS
 - Favorites / presets
 - Lock screen shortcuts (Android 12+)
 - Backup/restore settings
