@@ -35,13 +35,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.volumecontrol.android.R
 import com.volumecontrol.android.data.DeviceDiscovery
 import com.volumecontrol.android.data.DiscoveredDevice
+import com.volumecontrol.android.model.DeviceState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiscoveryScreen(
     discovery: DeviceDiscovery,
+    existingDevices: List<DeviceState> = emptyList(),
     onDeviceSelected: (DiscoveredDevice) -> Unit,
     onBack: () -> Unit
 ) {
@@ -134,8 +138,12 @@ fun DiscoveryScreen(
                     }
                 } else {
                     items(discoveredDevices) { device ->
+                        val isAlreadyAdded = existingDevices.any {
+                            it.device.host == device.host && it.device.port == device.port
+                        }
                         DeviceDiscoveryCard(
                             device = device,
+                            isAlreadyAdded = isAlreadyAdded,
                             onAdd = { onDeviceSelected(device) }
                         )
                     }
@@ -148,6 +156,7 @@ fun DiscoveryScreen(
 @Composable
 private fun DeviceDiscoveryCard(
     device: DiscoveredDevice,
+    isAlreadyAdded: Boolean = false,
     onAdd: () -> Unit
 ) {
     Card(
@@ -179,10 +188,12 @@ private fun DeviceDiscoveryCard(
                 )
             }
 
-            Button(onClick = onAdd) {
-                Icon(Icons.Default.Add, contentDescription = "Add device")
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Add")
+            if (!isAlreadyAdded) {
+                Button(onClick = onAdd) {
+                    Icon(Icons.Default.Add, contentDescription = "Add device")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(stringResource(R.string.add_button))
+                }
             }
         }
     }

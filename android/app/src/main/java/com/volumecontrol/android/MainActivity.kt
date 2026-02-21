@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
                 if (uiState.showDiscoveryScreen) {
                     DiscoveryScreen(
                         discovery = discovery,
+                        existingDevices = uiState.devices,
                         onDeviceSelected = { discovered ->
                             viewModel.addDiscoveredDevice(discovered.name, discovered.host, discovered.port)
                         },

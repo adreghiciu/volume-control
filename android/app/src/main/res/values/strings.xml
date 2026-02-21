@@ -14,4 +14,6 @@
     <string name="volume_label">Volume</string>
     <string name="mute_all">Mute All</string>
     <string name="unmute_all">Unmute All</string>
+    <string name="discover_devices">Discover ...</string>
+    <string name="add_button">Add ...</string>
 </resources>

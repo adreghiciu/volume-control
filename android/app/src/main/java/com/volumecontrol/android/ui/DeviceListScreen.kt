@@ -84,7 +84,7 @@ fun DeviceListScreen(
                             )
                         }
                         DropdownMenuItem(
-                            text = { Text("Discover Devices") },
+                            text = { Text(stringResource(R.string.discover_devices)) },
                             onClick = {
                                 showMenu = false
                                 onDiscoverDevices()
