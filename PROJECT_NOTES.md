@@ -1,5 +1,14 @@
 # Volume Control Project - Development Notes
 
+⚠️ **CRITICAL WORKFLOW RULE** ⚠️
+==================================
+**DO NOT COMMIT OR PUSH AUTOMATICALLY**
+- After implementing features/fixes, make changes and build/test but WAIT
+- Only commit when explicitly asked: "commit" or "commit and push"
+- User may want to test functionality first before code is committed/pushed
+- This ensures quality testing and prevents premature/unwanted commits
+- Example workflow: Make code → Build/test → WAIT FOR USER → User says "commit" → Then commit & push
+
 ## Project Vision
 
 A multi-platform volume control system:
