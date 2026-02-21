@@ -410,6 +410,7 @@ ifconfig | grep "inet "
 ```
 
 ## Last Updated
+- 2026-02-21 (Session 10 - mDNS Discovery UI Polish, Remove All feature, reinstall.sh device targeting)
 - 2026-02-19 (Session 9 - Mute functionality fully implemented and working!)
 - Current status:
   - Phase 1 (macOS): Mute feature complete, HTTP API on root / endpoint
@@ -511,3 +512,58 @@ ifconfig | grep "inet "
   - Added mute feature documentation with API examples
   - Updated PROJECT_NOTES.md with implementation details
   - All READMEs now document the new root `/` endpoint and optional fields
+
+- **Session 10**: mDNS Discovery UI Polish & Cleanup (CURRENT)
+  - **Discovery Screen Improvements**:
+    - Discovery screen now stays open after adding device (removed `showDiscoveryScreen = false` from addDiscoveredDevice)
+    - Users can add multiple devices without re-opening discovery
+    - Back button closes discovery screen when done
+
+  - **String Resource Updates**:
+    - "Discover Devices" menu item → "Discover" (more compact)
+    - "Add" button on discovery screen (was "Add Manually", now just "Add")
+    - Main menu "Add Device" → "Add Manually" (to distinguish from auto-discover)
+    - String resources: discover_devices, add_button, remove_all, remove_all_confirm
+
+  - **Duplicate Device Detection**:
+    - Already working: DiscoveryScreen checks existingDevices parameter
+    - Automatically hides "Add" button if device exists (IP:port match)
+    - Users can't accidentally add same device twice
+
+  - **Remove All Feature** (added Session 10):
+    - New menu item "Remove All" with confirmation dialog
+    - Removes all configured devices at once
+    - String resources added: remove_all, remove_all_confirm
+    - MainViewModel.removeAllDevices() method iterates and deletes all devices
+
+  - **reinstall.sh Script Updates**:
+    - Updated to target specific device (ZY22GN7CXW) using DEVICE variable
+    - Adds `-s $DEVICE` flag to all adb commands
+    - Fixes issue where script would fail when multiple devices connected
+    - Works correctly with both USB and network-connected Android devices
+
+  - **Documentation Cleanup**:
+    - Deleted 7 MDNS_*.md documentation files (no longer needed)
+    - Updated Android README.md to document mDNS discovery:
+      - Added discovery features to feature list
+      - Updated "Add Device" usage section with Discover instructions
+      - Removed outdated "Manual IP entry: No mDNS/Bonjour discovery" limitation
+      - Removed "Device discovery via mDNS" from future enhancements
+      - Updated file structure to include DeviceDiscovery.kt and DiscoveryScreen.kt
+
+  - **Key Commits**:
+    - d44a2a4: Update device discovery UI with compact button labels and duplicate detection
+    - 0046338: Update reinstall.sh to target specific device (ZY22GN7CXW)
+    - 3c2d8f6: Update discovery UI labels to be clearer
+    - be751e9: Add 'Remove All' menu entry to delete all configured devices
+    - b096c1d: Update menu labels (main to "Add Manually", discovery to "Add")
+    - dd63779: Keep discovery screen open after adding device
+    - 04a514d: Remove MDNS documentation files
+    - d3d52c3: Update Android README to document mDNS discovery feature
+
+  - **Testing Completed**:
+    - Built Android APK with all changes
+    - Reinstalled successfully using updated reinstall.sh
+    - Verified discovery screen stays open after adding device
+    - Verified "Add" button hides for duplicate devices
+    - Verified all menu items working correctly
