@@ -6,6 +6,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.net.nsd.NsdManager
+import android.net.nsd.NsdServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -20,6 +22,8 @@ class VolumeService : Service() {
     private lateinit var volumeController: VolumeController
     private lateinit var httpServer: HttpServer
     private var isServerRunning = false
+    private lateinit var nsdManager: NsdManager
+    private var nsdServiceRegistration: NsdManager.RegistrationListener? = null
 
     inner class LocalBinder : Binder() {
         fun getService(): VolumeService = this@VolumeService
@@ -30,6 +34,7 @@ class VolumeService : Service() {
         Log.d(TAG, "VolumeService created")
         volumeController = VolumeController(this)
         httpServer = HttpServer(volumeController)
+        nsdManager = getSystemService(NsdManager::class.java)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -45,6 +50,9 @@ class VolumeService : Service() {
             httpServer.start()
             isServerRunning = true
             Log.d(TAG, "HTTP Server started")
+
+            // Register mDNS service
+            registerMdnsService()
         }
 
         return START_STICKY
@@ -54,7 +62,49 @@ class VolumeService : Service() {
         Log.d(TAG, "VolumeService destroyed")
         httpServer.stop()
         isServerRunning = false
+
+        // Unregister mDNS service
+        unregisterMdnsService()
+
         super.onDestroy()
+    }
+
+    private fun registerMdnsService() {
+        val serviceInfo = NsdServiceInfo().apply {
+            serviceName = android.os.Build.MODEL  // Use device model as service name
+            serviceType = "_volumecontrol._tcp"
+            port = 8888
+        }
+
+        nsdServiceRegistration = object : NsdManager.RegistrationListener {
+            override fun onServiceRegistered(p0: NsdServiceInfo?) {
+                Log.d(TAG, "mDNS service registered: ${serviceInfo.serviceName}._volumecontrol._tcp.local")
+            }
+
+            override fun onRegistrationFailed(p0: NsdServiceInfo?, p1: Int) {
+                Log.e(TAG, "Failed to register mDNS service: $p1")
+            }
+
+            override fun onServiceUnregistered(p0: NsdServiceInfo?) {
+                Log.d(TAG, "mDNS service unregistered")
+            }
+
+            override fun onUnregistrationFailed(p0: NsdServiceInfo?, p1: Int) {
+                Log.e(TAG, "Failed to unregister mDNS service: $p1")
+            }
+        }
+
+        nsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, nsdServiceRegistration!!)
+    }
+
+    private fun unregisterMdnsService() {
+        nsdServiceRegistration?.let {
+            try {
+                nsdManager.unregisterService(it)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error unregistering mDNS service: ${e.message}")
+            }
+        }
     }
 
     override fun onBind(intent: Intent): IBinder = binder

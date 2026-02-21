@@ -15,7 +15,8 @@ import kotlinx.coroutines.launch
 data class MainUiState(
     val devices: List<DeviceState> = emptyList(),
     val showAddEditDialog: Boolean = false,
-    val editingDevice: Device? = null   // null = adding new
+    val editingDevice: Device? = null,   // null = adding new
+    val showDiscoveryScreen: Boolean = false
 )
 
 class MainViewModel(
@@ -201,6 +202,27 @@ class MainViewModel(
 
     fun retryAll() {
         fetchAllVolumes()
+    }
+
+    fun showDiscoveryScreen() {
+        _uiState.value = _uiState.value.copy(showDiscoveryScreen = true)
+    }
+
+    fun closeDiscoveryScreen() {
+        _uiState.value = _uiState.value.copy(showDiscoveryScreen = false)
+    }
+
+    fun addDiscoveredDevice(name: String, host: String, port: Int) {
+        viewModelScope.launch {
+            val device = Device(name = name, host = host, port = port)
+            repository.addDevice(device)
+            _uiState.value = _uiState.value.copy(
+                devices = _uiState.value.devices + DeviceState(device = device),
+                showDiscoveryScreen = false
+            )
+            // Fetch volume for the newly added device
+            fetchAllVolumes()
+        }
     }
 
     private fun updateDevice(deviceId: String, updater: (DeviceState) -> DeviceState) {

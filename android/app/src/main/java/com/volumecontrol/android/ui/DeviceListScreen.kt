@@ -31,6 +31,7 @@ import com.volumecontrol.android.model.Device
 fun DeviceListScreen(
     uiState: MainUiState,
     onAddDevice: () -> Unit,
+    onDiscoverDevices: () -> Unit,
     onEditDevice: (Device) -> Unit,
     onDeleteDevice: (String) -> Unit,
     onVolumeChange: (Device, Int) -> Unit,
@@ -82,6 +83,13 @@ fun DeviceListScreen(
                                 }
                             )
                         }
+                        DropdownMenuItem(
+                            text = { Text("Discover Devices") },
+                            onClick = {
+                                showMenu = false
+                                onDiscoverDevices()
+                            }
+                        )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.add_device)) },
                             onClick = {

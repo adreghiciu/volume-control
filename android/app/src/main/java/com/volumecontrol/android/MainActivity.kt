@@ -7,10 +7,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.volumecontrol.android.data.DeviceDiscovery
 import com.volumecontrol.android.data.DeviceRepository
 import com.volumecontrol.android.data.VolumeApiClient
 import com.volumecontrol.android.ui.AddEditDeviceDialog
 import com.volumecontrol.android.ui.DeviceListScreen
+import com.volumecontrol.android.ui.DiscoveryScreen
 import com.volumecontrol.android.ui.MainViewModel
 import com.volumecontrol.android.ui.theme.VolumeControlTheme
 
@@ -25,6 +27,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             VolumeControlTheme {
+                val discovery = remember { DeviceDiscovery(applicationContext) }
                 val viewModel: MainViewModel = viewModel(
                     factory = MainViewModelFactory(repository, apiClient)
                 )
@@ -32,31 +35,42 @@ class MainActivity : ComponentActivity() {
 
                 val uiState by viewModel.uiState.collectAsState()
 
-                DeviceListScreen(
-                    uiState = uiState,
-                    onAddDevice = { viewModel.showAddDeviceDialog() },
-                    onEditDevice = { device -> viewModel.showEditDeviceDialog(device) },
-                    onDeleteDevice = { id -> viewModel.deleteDevice(id) },
-                    onVolumeChange = { device, volume -> viewModel.setVolume(device, volume) },
-                    onMuteToggle = { device -> viewModel.toggleMute(device) },
-                    onMuteAll = { viewModel.muteAll() },
-                    onUnmuteAll = { viewModel.unmuteAll() },
-                    onRetryAll = { viewModel.retryAll() }
-                )
-
-                if (uiState.showAddEditDialog) {
-                    AddEditDeviceDialog(
-                        device = uiState.editingDevice,
-                        onDismiss = { viewModel.closeDialog() },
-                        onSave = { name, host, port ->
-                            val device = uiState.editingDevice
-                            if (device == null) {
-                                viewModel.addDevice(name, host, port)
-                            } else {
-                                viewModel.editDevice(device, name, host, port)
-                            }
-                        }
+                if (uiState.showDiscoveryScreen) {
+                    DiscoveryScreen(
+                        discovery = discovery,
+                        onDeviceSelected = { discovered ->
+                            viewModel.addDiscoveredDevice(discovered.name, discovered.host, discovered.port)
+                        },
+                        onBack = { viewModel.closeDiscoveryScreen() }
                     )
+                } else {
+                    DeviceListScreen(
+                        uiState = uiState,
+                        onAddDevice = { viewModel.showAddDeviceDialog() },
+                        onDiscoverDevices = { viewModel.showDiscoveryScreen() },
+                        onEditDevice = { device -> viewModel.showEditDeviceDialog(device) },
+                        onDeleteDevice = { id -> viewModel.deleteDevice(id) },
+                        onVolumeChange = { device, volume -> viewModel.setVolume(device, volume) },
+                        onMuteToggle = { device -> viewModel.toggleMute(device) },
+                        onMuteAll = { viewModel.muteAll() },
+                        onUnmuteAll = { viewModel.unmuteAll() },
+                        onRetryAll = { viewModel.retryAll() }
+                    )
+
+                    if (uiState.showAddEditDialog) {
+                        AddEditDeviceDialog(
+                            device = uiState.editingDevice,
+                            onDismiss = { viewModel.closeDialog() },
+                            onSave = { name, host, port ->
+                                val device = uiState.editingDevice
+                                if (device == null) {
+                                    viewModel.addDevice(name, host, port)
+                                } else {
+                                    viewModel.editDevice(device, name, host, port)
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }

@@ -6,12 +6,29 @@ class HTTPServer {
     var listener: NWListener?
     var volumeController: VolumeController
 
+    // Get a device name for mDNS (hostname or fallback)
+    private var deviceName: String {
+        if let hostname = Host.current().localizedName {
+            // Remove .local suffix if present
+            return hostname.replacingOccurrences(of: ".local", with: "")
+        }
+        return "VolumeControl"
+    }
+
     init(volumeController: VolumeController) {
         self.volumeController = volumeController
     }
 
     func start() throws {
+        // Create service descriptor for mDNS
+        let descriptor = NWListener.Service(
+            name: deviceName,
+            type: "_volumecontrol._tcp",
+            domain: "local"
+        )
+
         listener = try NWListener(using: .tcp, on: port)
+        listener?.service = descriptor
 
         listener?.newConnectionHandler = { [weak self] connection in
             self?.handleConnection(connection)
@@ -21,6 +38,7 @@ class HTTPServer {
             switch state {
             case .ready:
                 print("HTTP server listening on port 8888")
+                print("mDNS service registered: \(self?.deviceName ?? "VolumeControl")._volumecontrol._tcp.local")
             case .failed(let error):
                 print("HTTP server error: \(error)")
             default:
