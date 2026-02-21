@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Volume Control</string>
-    <string name="add_device">Add Device</string>
+    <string name="add_device">Add Manually</string>
     <string name="retry_all">Refresh</string>
     <string name="device_name">Device Name</string>
     <string name="device_host">Host</string>
@@ -15,7 +15,7 @@
     <string name="mute_all">Mute All</string>
     <string name="unmute_all">Unmute All</string>
     <string name="discover_devices">Discover</string>
-    <string name="add_button">Add Manually</string>
+    <string name="add_button">Add</string>
     <string name="remove_all">Remove All</string>
     <string name="remove_all_confirm">Remove all configured devices?</string>
 </resources>
