@@ -55,7 +55,8 @@ class MainActivity : ComponentActivity() {
                         onMuteToggle = { device -> viewModel.toggleMute(device) },
                         onMuteAll = { viewModel.muteAll() },
                         onUnmuteAll = { viewModel.unmuteAll() },
-                        onRetryAll = { viewModel.retryAll() }
+                        onRetryAll = { viewModel.retryAll() },
+                        onRemoveAll = { viewModel.removeAllDevices() }
                     )
 
                     if (uiState.showAddEditDialog) {

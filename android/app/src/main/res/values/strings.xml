@@ -16,4 +16,6 @@
     <string name="unmute_all">Unmute All</string>
     <string name="discover_devices">Discover</string>
     <string name="add_button">Add Manually</string>
+    <string name="remove_all">Remove All</string>
+    <string name="remove_all_confirm">Remove all configured devices?</string>
 </resources>

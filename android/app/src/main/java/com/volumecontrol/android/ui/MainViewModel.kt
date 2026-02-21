@@ -204,6 +204,16 @@ class MainViewModel(
         fetchAllVolumes()
     }
 
+    fun removeAllDevices() {
+        viewModelScope.launch {
+            val devicesToDelete = _uiState.value.devices.map { it.device.id }
+            devicesToDelete.forEach { id ->
+                repository.deleteDevice(id)
+            }
+            _uiState.value = _uiState.value.copy(devices = emptyList())
+        }
+    }
+
     fun showDiscoveryScreen() {
         _uiState.value = _uiState.value.copy(showDiscoveryScreen = true)
     }

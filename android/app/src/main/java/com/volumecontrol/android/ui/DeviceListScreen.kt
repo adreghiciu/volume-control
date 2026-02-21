@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,12 +40,39 @@ fun DeviceListScreen(
     onMuteToggle: (Device) -> Unit,
     onMuteAll: () -> Unit,
     onUnmuteAll: () -> Unit,
-    onRetryAll: () -> Unit
+    onRetryAll: () -> Unit,
+    onRemoveAll: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showRemoveAllDialog by remember { mutableStateOf(false) }
 
     // Determine if all devices are muted
     val allDevicesMuted = uiState.devices.isNotEmpty() && uiState.devices.all { it.muted }
+
+    if (showRemoveAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveAllDialog = false },
+            title = { Text(stringResource(R.string.remove_all)) },
+            text = { Text(stringResource(R.string.remove_all_confirm)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showRemoveAllDialog = false
+                        onRemoveAll()
+                    }
+                ) {
+                    Text(stringResource(R.string.remove_all))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showRemoveAllDialog = false }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -95,6 +124,13 @@ fun DeviceListScreen(
                             onClick = {
                                 showMenu = false
                                 onAddDevice()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.remove_all)) },
+                            onClick = {
+                                showMenu = false
+                                showRemoveAllDialog = true
                             }
                         )
                     }
