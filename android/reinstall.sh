@@ -7,6 +7,7 @@ PACKAGE="com.volumecontrol.android"
 APK_PATH="./VolumeControl.apk"
 BACKUP_DIR="/tmp/volume-control-backup-$(date +%s)"
 DATASTORE_SUBDIR="files/datastore"
+DEVICE="ZY22GN7CXW"
 
 echo "🔄 Volume Control Android - Reinstall with Device Preservation"
 echo "=============================================================="
@@ -29,15 +30,15 @@ echo "📦 Step 1: Backing up configured devices..."
 mkdir -p "$BACKUP_DIR"
 
 # Check if app is installed and has datastore
-if adb shell "run-as $PACKAGE test -d $DATASTORE_SUBDIR" 2>/dev/null; then
+if adb -s $DEVICE shell "run-as $PACKAGE test -d $DATASTORE_SUBDIR" 2>/dev/null; then
     # Get list of files in datastore directory using run-as
-    FILES=$(adb shell "run-as $PACKAGE ls $DATASTORE_SUBDIR" 2>/dev/null | tr -d '\r')
+    FILES=$(adb -s $DEVICE shell "run-as $PACKAGE ls $DATASTORE_SUBDIR" 2>/dev/null | tr -d '\r')
 
     if [ -n "$FILES" ]; then
         echo "   Found datastore files:"
         # Pull each file using run-as
         for file in $FILES; do
-            adb shell "run-as $PACKAGE cat $DATASTORE_SUBDIR/$file" > "$BACKUP_DIR/$file" 2>/dev/null && \
+            adb -s $DEVICE shell "run-as $PACKAGE cat $DATASTORE_SUBDIR/$file" > "$BACKUP_DIR/$file" 2>/dev/null && \
                 echo "   ✓ Backed up: $file"
         done
     else
@@ -49,7 +50,7 @@ fi
 
 echo ""
 echo "🗑️  Step 2: Uninstalling old version..."
-if adb uninstall "$PACKAGE" > /dev/null 2>&1; then
+if adb -s $DEVICE uninstall "$PACKAGE" > /dev/null 2>&1; then
     echo "   ✓ Old version uninstalled"
 else
     echo "   ℹ️  App was not installed"
@@ -57,7 +58,7 @@ fi
 
 echo ""
 echo "📲 Step 3: Installing new version..."
-if adb install "$APK_PATH" > /dev/null 2>&1; then
+if adb -s $DEVICE install "$APK_PATH" > /dev/null 2>&1; then
     echo "   ✓ New version installed"
 else
     echo "❌ Failed to install APK"
@@ -78,7 +79,7 @@ if [ -n "$(ls -A $BACKUP_DIR 2>/dev/null)" ]; then
     echo "📥 Step 5: Restoring device configuration..."
 
     # Create datastore directory on device
-    adb shell "run-as $PACKAGE mkdir -p $DATASTORE_SUBDIR" 2>/dev/null
+    adb -s $DEVICE shell "run-as $PACKAGE mkdir -p $DATASTORE_SUBDIR" 2>/dev/null
 
     # Push each file back using temp location
     RESTORE_SUCCESS=0
@@ -86,11 +87,11 @@ if [ -n "$(ls -A $BACKUP_DIR 2>/dev/null)" ]; then
         if [ -f "$file" ]; then
             filename=$(basename "$file")
             # Push to temp location first
-            if adb push "$file" "/data/local/tmp/$filename" > /dev/null 2>&1; then
+            if adb -s $DEVICE push "$file" "/data/local/tmp/$filename" > /dev/null 2>&1; then
                 # Then copy from temp to app's datastore using run-as
-                if adb shell "run-as $PACKAGE cp /data/local/tmp/$filename $DATASTORE_SUBDIR/$filename" > /dev/null 2>&1; then
+                if adb -s $DEVICE shell "run-as $PACKAGE cp /data/local/tmp/$filename $DATASTORE_SUBDIR/$filename" > /dev/null 2>&1; then
                     # Cleanup temp file
-                    adb shell "rm /data/local/tmp/$filename" > /dev/null 2>&1
+                    adb -s $DEVICE shell "rm /data/local/tmp/$filename" > /dev/null 2>&1
                     echo "   ✓ Restored: $filename"
                     RESTORE_SUCCESS=1
                 else
